@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -141,13 +140,10 @@ public class NativeScreenshotPlugin implements MethodCallHandler, FlutterPlugin,
 		}
 		if (call.method.equals("takeScreenshotImage")) {
 			int quality = 100;
-
-			HashMap arguments = (HashMap) call.arguments;
-			
+			ArrayList arguments = (ArrayList) call.arguments;
 			if(arguments.size() > 0) {
-				quality = (Integer) arguments.get("quality");
+				quality = (Integer) arguments.get(0);
 			}
-
 			handleTakeScreenshotImage(result, quality);
 			return;
 		}
@@ -219,7 +215,8 @@ public class NativeScreenshotPlugin implements MethodCallHandler, FlutterPlugin,
 	} // getApplicationName()
 
 	private String getScreenshotPath() {
-		String externalDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+		// String externalDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+		String externalDir = context.getCacheDir().getPath();
 
 		String sDir = externalDir
 						+ File.separator
@@ -394,6 +391,12 @@ public class NativeScreenshotPlugin implements MethodCallHandler, FlutterPlugin,
 			Log.println(Log.INFO, TAG, "Permission to write false due to version codes.");
 
 			return false;
+		}
+
+		if(Build.VERSION.SDK_INT > 29) {
+			Log.println(Log.INFO, TAG, "Permission to write granted! (SDK > 29)");
+
+			return true;
 		}
 
 		int perm = this.activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
